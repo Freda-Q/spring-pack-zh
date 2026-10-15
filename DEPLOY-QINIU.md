@@ -1,8 +1,26 @@
-# 通过 GitHub 部署到七牛云 LAS
+# 通过 GitHub 更新七牛云网站
 
-本项目是 Astro 服务端站点，包含 `/api/contact`。七牛云 Kodo 对象存储只能托管静态文件，因此这里使用 LAS「一键部署」的 GitHub 仓库部署功能。构建配置在 `.qiniu/deploy.yaml`。
+本项目有预渲染页面，也包含 Astro 服务端接口 `/api/contact`。现有正式域名使用七牛云 Kodo 静态托管；如需运行服务端接口，可按下文的 LAS 步骤另行部署。
 
-## 部署步骤
+## 现有正式站点的自动更新
+
+`www.spring-pack.cn` 当前由七牛云 Kodo 和 CDN 提供静态页面。仓库中的 `.github/workflows/deploy-qiniu-kodo.yml` 在每次推送 `main` 后构建网站，并将 `dist/client/` 中预渲染的页面及资源上传到 Kodo，再刷新该域名的 CDN 缓存。七牛云 LAS 的一键部署目前不支持 Git Push 自动更新，所以此流程直接更新现有 Kodo 站点。
+
+首次启用前，在 GitHub 仓库 **Settings → Secrets and variables → Actions** 中设置：
+
+- Repository variable `QINIU_BUCKET`：在七牛云 Kodo 中绑定 `www.spring-pack.cn` 的存储空间名称。未设置时，构建会运行，上传任务会跳过。
+- Repository secret `QINIU_ACCESS_KEY`：有该空间上传和 CDN 刷新权限的七牛云 AccessKey。
+- Repository secret `QINIU_SECRET_KEY`：对应的 SecretKey。不要将密钥写入仓库或提交历史。
+
+设置完成后，在 GitHub Actions 中手动运行一次 **Deploy to Qiniu Kodo**，核对正式站点的首页、联系页和微信二维码。之后每次推送 `main` 都会自动发布。构建使用官方 qshell `v2.19.13`，只覆盖同名文件，不删除空间中其他文件。
+
+Kodo 无法运行 Astro 的 `/api/contact`。当前联系表单依赖此接口，因此静态站点上的表单提交不会成功；电话、邮件和微信联系方式仍可使用。要让表单接收询盘，需要单独部署后端并改用可访问的 API 地址。
+
+## LAS 服务端部署（手动）
+
+LAS「一键部署」可以从公开 GitHub 仓库运行 Astro 服务端，构建配置在 `.qiniu/deploy.yaml`。
+
+### 部署步骤
 
 1. 将此目录推送到**公开** GitHub 仓库的 `main` 分支。`.env`、`node_modules` 和构建产物已由 `.gitignore` 排除。不要把密钥提交到 GitHub。
 2. 登录[七牛云 LAS 控制台](https://portal.qiniu.com/las)，进入「一键部署」→「新建部署」。填写 GitHub 仓库地址或 `owner/repository`，选择 `main`，配置路径使用 `.qiniu/deploy.yaml`。

@@ -1,0 +1,72 @@
+name: Deploy to Qiniu Kodo
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qiniu-kodo-production
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      QINIU_BUCKET: ${{ vars.QINIU_BUCKET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Check static pages
+        run: |
+          test -f dist/client/index.html
+          test -f dist/client/contact/index.html
+          grep -q 'https://www.spring-pack.cn/' dist/client/index.html
+      - name: Qiniu configuration notice
+        if: ${{ vars.QINIU_BUCKET == '' }}
+        run: echo '::warning::Set QINIU_BUCKET and Qiniu secrets to enable production deployment'
+      - name: Check Qiniu credentials
+        if: ${{ vars.QINIU_BUCKET != '' }}
+        env:
+          QINIU_ACCESS_KEY: ${{ secrets.QINIU_ACCESS_KEY }}
+          QINIU_SECRET_KEY: ${{ secrets.QINIU_SECRET_KEY }}
+        run: |
+          test -n "$QINIU_ACCESS_KEY" || { echo '::error::Missing QINIU_ACCESS_KEY secret'; exit 1; }
+          test -n "$QINIU_SECRET_KEY" || { echo '::error::Missing QINIU_SECRET_KEY secret'; exit 1; }
+      - name: Install official qshell
+        if: ${{ vars.QINIU_BUCKET != '' }}
+        run: |
+          curl -fsSL 'https://github.com/qiniu/qshell/releases/download/v2.19.13/qshell-v2.19.13-linux-amd64.tar.gz' -o "$RUNNER_TEMP/qshell.tar.gz"
+          echo '4b544c10c394d92bfea3187f5701c52dcbf71544f3000791db34d2c20beae1f6  '"$RUNNER_TEMP/qshell.tar.gz" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/qshell.tar.gz" -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+      - name: Upload changed static files to Kodo
+        if: ${{ vars.QINIU_BUCKET != '' }}
+        env:
+          QINIU_ACCESS_KEY: ${{ secrets.QINIU_ACCESS_KEY }}
+          QINIU_SECRET_KEY: ${{ secrets.QINIU_SECRET_KEY }}
+        run: |
+          qshell account "$QINIU_ACCESS_KEY" "$QINIU_SECRET_KEY" github-actions
+          qshell qupload2 \
+            --src-dir "$GITHUB_WORKSPACE/dist/client" \
+            --bucket "$QINIU_BUCKET" \
+            --overwrite --check-exists --check-hash --rescan-local \
+            --thread-count 12 \
+            --failure-list "$RUNNER_TEMP/qiniu-failed.txt"
+          if test -s "$RUNNER_TEMP/qiniu-failed.txt"; then
+            echo '::error::Some files failed to upload to Qiniu Kodo'
+            exit 1
+          fi
+      - name: Refresh production CDN
+        if: ${{ vars.QINIU_BUCKET != '' }}
+        run: |
+          printf '%s\n' 'https://www.spring-pack.cn/' > "$RUNNER_TEMP/qiniu-refresh.txt"
+          qshell cdnrefresh --dirs -i "$RUNNER_TEMP/qiniu-refresh.txt"
