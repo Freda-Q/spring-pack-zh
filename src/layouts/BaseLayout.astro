@@ -76,10 +76,10 @@ const pageCssHref = pageId && availablePageCss.has(pageId) ? `/assets/first-mach
       <>
         <aside class="global-floating-cta" aria-label="快速联系">
           <div class="global-floating-wechat-wrap">
-            <button class="global-floating-wechat" type="button" data-wechat-toggle aria-label="微信联系">
+            <button class="global-floating-wechat" type="button" aria-label="显示微信二维码" aria-controls="global-wechat-qr">
               <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M11 6c-5 0-9 3.6-9 8 0 2.4 1.2 4.6 3.2 6l-1.2 3.6 4-2.1c1 .3 2 .5 3 .5 5 0 9-3.6 9-8s-4-8-9-8Zm-3 6c.6 0 1 .4 1 1s-.4 1-1 1-1-.4-1-1 .4-1 1-1Zm6 0c.6 0 1 .4 1 1s-.4 1-1 1-1-.4-1-1 .4-1 1-1Z"/><path d="M21 3c-4 0-8 3-8 7s4 7 8 7c.9 0 1.7-.1 2.5-.4l3.2 1.7-.9-3c1.7-1.3 2.7-3.2 2.7-5.3 0-3.9-3.6-7-7.5-7Zm-2 5c.4 0 .8.3.8.7 0 .5-.4.8-.8.8-.4 0-.8-.3-.8-.8 0-.4.4-.7.8-.7Zm4 0c.4 0 .8.3.8.7 0 .5-.4.8-.8.8-.4 0-.8-.3-.8-.8 0-.4.4-.7.8-.7Z"/></svg>
             </button>
-            <div class="global-floating-qr-popover" data-wechat-popover>
+            <div class="global-floating-qr-popover" id="global-wechat-qr">
               <figure>
                 <img src="/assets/first-machinery/contact/wechat-qr-2026.webp" alt="微信二维码" width="200" height="200" loading="lazy" />
               </figure>
@@ -88,7 +88,10 @@ const pageCssHref = pageId && availablePageCss.has(pageId) ? `/assets/first-mach
           </div>
           <a class="global-floating-phone" href="tel:18962223666" aria-label="拨打电话 18962223666">
             <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M8.4 5.1 12 4l3 7.5-2.3 1.8a17 17 0 0 0 7.2 7.2L21.7 18l7.5 3-1.1 3.8c-.5 1.7-2 2.8-3.8 2.6C14.1 26.8 5.2 17.9 4.1 7.2C3.9 5.4 6.8 5.6 8.4 5.1Z"/></svg>
-            <span class="global-floating-phone-label">18962223666</span>
+            <span class="global-floating-phone-label">
+              <span class="global-floating-phone-action">拨打电话</span>
+              <span>18962223666</span>
+            </span>
           </a>
         </aside>
       </>
@@ -122,23 +125,6 @@ const pageCssHref = pageId && availablePageCss.has(pageId) ? `/assets/first-mach
           }, 3000);
         };
         window.addEventListener('scroll', revealGlobalFloatingCta, { passive: true, once: true });
-
-        const wechatToggle = document.querySelector('[data-wechat-toggle]');
-        const wechatPopover = document.querySelector('[data-wechat-popover]');
-        let wechatOpen = false;
-
-        wechatToggle?.addEventListener('click', (e) => {
-          e.stopPropagation();
-          wechatOpen = !wechatOpen;
-          wechatPopover?.classList.toggle('is-open', wechatOpen);
-        });
-
-        document.addEventListener('click', (e) => {
-          if (wechatOpen && !wechatToggle?.contains(e.target) && !wechatPopover?.contains(e.target)) {
-            wechatOpen = false;
-            wechatPopover?.classList.remove('is-open');
-          }
-        });
 
         document.querySelectorAll('[data-scroll-target]').forEach((item) => {
           item.addEventListener('click', () => {

@@ -2412,6 +2412,7 @@ select {
 }
 
 .global-floating-phone {
+  position: relative;
   background: #3f6442;
 }
 
@@ -2426,11 +2427,38 @@ select {
 
 .global-floating-phone-label {
   position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
+  right: calc(100% - 2px);
+  top: 50%;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: 58px;
+  padding: 0 18px;
+  border-radius: 999px 0 0 999px;
+  background: #3f6442;
+  font-size: 15px;
+  font-weight: 800;
   white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-50%);
+  transition: opacity 180ms ease, visibility 180ms ease;
+}
+
+.global-floating-phone-action {
+  padding: 5px 7px;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 999px;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.global-floating-phone:hover .global-floating-phone-label,
+.global-floating-phone:focus-visible .global-floating-phone-label {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
 }
 
 .global-floating-wechat:hover,
@@ -2462,8 +2490,18 @@ select {
   white-space: nowrap;
 }
 
-.global-floating-qr-popover.is-open {
+.global-floating-wechat-wrap:hover .global-floating-qr-popover,
+.global-floating-wechat-wrap:focus-within .global-floating-qr-popover {
   display: block;
+}
+
+.global-floating-qr-popover::before {
+  content: '';
+  position: absolute;
+  right: -8px;
+  top: 0;
+  width: 8px;
+  height: 100%;
 }
 
 .global-floating-qr-popover figure {
@@ -5208,14 +5246,21 @@ body.mobile-quote-open {
     font-weight: 800;
   }
 
+  .global-floating-phone-action {
+    display: none;
+  }
+
   .global-floating-phone-label {
     position: static;
-    width: auto;
     height: auto;
-    overflow: visible;
-    clip: auto;
+    padding: 0;
+    border-radius: 0;
     color: #fff;
     white-space: nowrap;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: none;
   }
 
   .global-floating-wechat svg,
