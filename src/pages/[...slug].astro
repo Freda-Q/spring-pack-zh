@@ -1,0 +1,36 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import MigratedContent from '@/components/MigratedContent.astro';
+import site from '@/data/site.json';
+
+export const prerender = true;
+
+export function getStaticPaths() {
+  const explicitPageSlugs = new Set([
+    'contact',
+    'factory',
+    'solutions',
+    'products/packaging-machine',
+    'products/preform-and-bottle-blowing-machine',
+    'products/production-material',
+    'products/water-treatment-system',
+    'products/filling-machine/5-gallon-water-line',
+    'products/filling-machine/carbonated-drink-filling-machine',
+    'products/filling-machine/juice-tea-filling-machine',
+    'products/filling-machine/water-filling-machine',
+  ]);
+
+  const pages = site.pages
+    .filter((page) => page.slug && !explicitPageSlugs.has(page.slug))
+    .map((page) => ({ params: { slug: page.slug }, props: { item: page } }));
+  const posts = site.posts.map((post) => ({ params: { slug: post.slug }, props: { item: post } }));
+  return [...pages, ...posts];
+}
+
+const { item } = Astro.props;
+const title = `${item.title} | 中科美利（苏州）包装设备有限公司`;
+---
+
+<BaseLayout title={title} description={item.excerpt || undefined} pageId={item.id}>
+  <MigratedContent item={item} />
+</BaseLayout>

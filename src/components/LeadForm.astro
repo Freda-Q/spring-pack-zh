@@ -1,0 +1,111 @@
+---
+import { countryDialOptions, defaultCountryName } from '@/data/countryDialOptions';
+
+interface Props {
+  product?: string;
+  compact?: boolean;
+  sourceNote?: string;
+  eyebrow?: string;
+  title?: string;
+  subtitle?: string;
+  showProductType?: boolean;
+}
+
+const {
+  product = '常规咨询',
+  compact = false,
+  sourceNote,
+  eyebrow = '免费产线方案',
+  title = '获取匹配项目的设备配置。',
+  subtitle = '请告诉我们您的需求，工程团队会评估后直接回复。',
+  showProductType = false,
+} = Astro.props;
+---
+
+<section class:list={['lead-section', compact && 'lead-section--compact']} id={compact ? undefined : 'inquiry'}>
+  <div class="lead-card" data-lead-card>
+    <form class="lead-form" data-lead-form novalidate>
+      <div class="lead-eyebrow">{eyebrow}</div>
+      <h2>{title}</h2>
+      <p class="lead-sub">{subtitle}</p>
+
+      <div class="lead-promises">
+        <span>24小时内回复</span>
+        <span>免费产线配置</span>
+        <span>工程师评估</span>
+      </div>
+
+      <div class="lead-grid">
+        <label>
+          <span>姓名 <b>*</b></span>
+          <input name="name" type="text" autocomplete="name" placeholder="请输入姓名" required />
+          <em data-error-for="name">请输入您的姓名。</em>
+        </label>
+        <label>
+          <span>邮箱 <b>*</b></span>
+          <input name="email" type="email" autocomplete="email" placeholder="name@company.com" required />
+          <em data-error-for="email">请输入有效邮箱。</em>
+        </label>
+        <label class="lead-phone-field">
+          <span>WhatsApp <b>*</b></span>
+          <div class="lead-phone-control">
+            <select name="country" autocomplete="country-name" required aria-label="国家区号">
+              {countryDialOptions.map((item) => (
+                <option value={item.country} data-dial={item.code} selected={item.country === defaultCountryName}>
+                  {item.flag} {item.code}
+                </option>
+              ))}
+            </select>
+            <input name="whatsapp" type="tel" autocomplete="tel" placeholder="555 000 0000" required />
+          </div>
+          <em data-error-for="whatsapp">请选择国家并填写 WhatsApp 号码。</em>
+        </label>
+        {showProductType && (
+          <label class="lead-product-field">
+            <span>产品类型</span>
+            <select name="product">
+              <option value="纯净水 / 矿泉水" selected>纯净水 / 矿泉水</option>
+              <option value="果汁 / 茶饮 / 功能饮料">果汁 / 茶饮 / 功能饮料</option>
+              <option value="碳酸饮料">碳酸饮料</option>
+              <option value="食用油">食用油</option>
+              <option value="酱料 / 调味品">酱料 / 调味品</option>
+              <option value="其他液体">其他液体</option>
+            </select>
+          </label>
+        )}
+        <label class="lead-message-field">
+          <span>项目需求 <b>*</b></span>
+          <textarea
+            name="message"
+            placeholder="瓶型、饮料类型、目标产能、工厂状态等..."
+            required
+          ></textarea>
+          <em data-error-for="message">请描述您的项目需求。</em>
+        </label>
+      </div>
+
+      <label class="lead-attachment-field">
+        <span>附件</span>
+        <input
+          name="attachment"
+          type="file"
+          accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.webp,.zip"
+        />
+        <em data-error-for="attachment">附件需为 PDF、Office、图片、WebP 或 ZIP，且不超过 8 MB。</em>
+      </label>
+
+      {!showProductType && <input type="hidden" name="product" value={product} />}
+      <input type="hidden" name="sourcePage" value="" />
+      <input type="hidden" name="sourceTitle" value="" />
+      <input type="hidden" name="source" value="" />
+      <input type="hidden" name="referrer" value="" />
+
+      <button class="lead-submit" type="submit">
+        获取产线方案
+        <svg viewBox="0 0 11 11" aria-hidden="true"><path d="M1 10L10 1M10 1H3M10 1V8" /></svg>
+      </button>
+      {sourceNote && <p class="lead-source-note">{sourceNote}</p>}
+      <p class="lead-status" data-lead-status role="status" aria-live="polite">无需承诺，您的询盘信息会被妥善保密。</p>
+    </form>
+  </div>
+</section>

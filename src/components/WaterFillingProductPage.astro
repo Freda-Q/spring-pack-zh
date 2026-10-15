@@ -1,0 +1,249 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Template1 from '@/components/Template1.astro';
+import type { 水灌装产品 } from '@/data/water灌装产品中心';
+
+interface Props {
+  product: 水灌装产品;
+}
+
+const { product } = Astro.props;
+const productUrl = `/products/filling-machine/water-filling-machine/${product.slug}/`;
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': '产品',
+  name: product.name,
+  description: product.seoDescription,
+  image: product.gallery.map((image) => image.src),
+  brand: {
+    '@type': 'Brand',
+    name: 'First Machinery',
+  },
+  manufacturer: {
+    '@type': 'Organization',
+    name: '中科美利（苏州）包装设备有限公司',
+  },
+  category: '水灌装机',
+  sku: product.slug.toUpperCase(),
+  additionalProperty: product.keySpecs.map(([name, value]) => ({
+    '@type': 'PropertyValue',
+    name,
+    value,
+  })),
+};
+---
+
+<BaseLayout title={`${product.name} | 全自动瓶装水灌装线`} description={product.seoDescription}>
+  <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+
+  <article class="product-detail-page">
+    <section class="product-hero">
+      <div class="container product-hero-inner">
+        <div class="product-hero-copy">
+          <nav class="product-breadcrumb" aria-label="Breadcrumb">
+            <a href="/">首页</a>
+            <span>/</span>
+            <a href="/products/">产品中心</a>
+            <span>/</span>
+            <a href="/products/filling-machine/water-filling-machine/">水灌装机</a>
+          </nav>
+          <p class="product-kicker">全自动三合一瓶装水生产线</p>
+          <h1>{product.name}</h1>
+          <p class="product-lead">{product.intro}</p>
+          <div class="product-hero-actions">
+            <a class="product-btn product-btn-primary" href="/contact/" data-source="product-detail">
+              获取报价
+            </a>
+            <a class="product-btn product-btn-secondary" href="#specifications">查看技术参数</a>
+          </div>
+          <dl class="product-hero-metrics" aria-label="Key product metrics">
+            <div>
+              <dt>产能</dt>
+              <dd>{product.capacityLabel}</dd>
+            </div>
+            <div>
+              <dt>瓶型范围</dt>
+              <dd>{product.bottleRange}</dd>
+            </div>
+            <div>
+              <dt>配置</dt>
+              <dd>{product.configuration}</dd>
+            </div>
+          </dl>
+        </div>
+        <div class="product-hero-media">
+          <img
+            src={product.gallery[0].src}
+            alt={product.gallery[0].alt}
+            width="960"
+            height="960"
+            loading="eager"
+            decoding="async"
+          />
+        </div>
+      </div>
+    </section>
+
+    <section class="product-section product-overview">
+      <div class="container product-two-col">
+        <div>
+          <p class="product-kicker">产品概述</p>
+          <h2>{product.capacityLabel} 瓶装水灌装方案</h2>
+          <p>
+            本页面适合客户按产能、瓶型、自动化程度和整线范围对比瓶装水灌装设备。设备可单独按灌装主机报价，也可根据工厂规划与前后端设备组成完整产线。
+          </p>
+          <p>
+            为了提供准确方案，请确认瓶容量、瓶型图、盖型、当地电压、水源、目标日产量和车间空间。最终配置需在生产前确认。
+          </p>
+        </div>
+        <div class="product-highlight-panel">
+          <h3>适用场景</h3>
+          <ul>
+            {product.bestFit.map((item) => (
+              <li>{item}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="product-section product-gallery-section" aria-labelledby="gallery-title">
+      <div class="container">
+        <div class="product-section-head">
+          <p class="product-kicker">产品图片</p>
+          <h2 id="gallery-title">设备图片与产线细节</h2>
+        </div>
+        <div class="product-gallery-grid">
+          {product.gallery.map((image, index) => (
+            <figure class:list={['product-gallery-item', index === 0 && 'is-large']}>
+              <img
+                src={image.src}
+                alt={image.alt}
+                width="960"
+                height="960"
+                loading={index === 0 ? 'eager' : 'lazy'}
+                decoding="async"
+              />
+              <figcaption>{image.caption || `产品图片 ${index + 1}`}</figcaption>
+            </figure>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section class="product-section product-spec-section" id="specifications">
+      <div class="container product-two-col product-two-col--wide">
+        <div>
+          <p class="product-kicker">技术参数</p>
+          <h2>主要技术参数</h2>
+          <p>
+            下表列出工程评估所需的关键参数。正式报价前，应结合选定瓶型、盖型和产线布局再次确认。
+          </p>
+        </div>
+        <div class="product-spec-table" role="table" aria-label={`${product.name} 技术参数`}>
+          {product.keySpecs.map(([name, value]) => (
+            <div role="row">
+              <strong role="cell">{name}</strong>
+              <span role="cell">{value}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section class="product-section product-feature-section">
+      <div class="container">
+        <div class="product-section-head">
+          <p class="product-kicker">产线优势</p>
+          <h2>为完整瓶装水项目案例设计</h2>
+        </div>
+        <div class="product-feature-grid">
+          {product.highlights.map((item) => (
+            <div class="product-feature-card">
+              <p>{item}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section class="product-section product-process-section">
+      <div class="container">
+        <div class="product-section-head">
+          <p class="product-kicker">生产流程</p>
+          <h2>水灌装线工作原理</h2>
+        </div>
+        <div class="product-process-list">
+          {[
+            ['进瓶', '空 PET 瓶经输送线或风送系统进入主机，可由吹瓶机输出或人工上瓶。'],
+            ['冲洗', '灌装前对瓶内进行冲洗，保持瓶内表面清洁。'],
+            ['灌装', '纯净水、矿泉水或山泉水通过配置好的灌装阀完成灌装。'],
+            ['封盖', '瓶盖经理盖、送盖后旋紧，完成瓶口密封。'],
+            ['包装', '产线可连接贴标、喷码、膜包、装箱或码垛设备。'],
+          ].map(([title, text], index) => (
+            <div class="product-process-item">
+              <span>{String(index + 1).padStart(2, '0')}</span>
+              <h3>{title}</h3>
+              <p>{text}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+
+
+    <section class="product-section product-faq-section">
+      <div class="container">
+        <div class="product-section-head">
+          <p class="product-kicker">常见问题</p>
+          <h2>常见问题：{product.capacityLabel} 瓶装水灌装项目案例</h2>
+        </div>
+        <div class="product-faq-list">
+          {[
+            [
+              `${product.name}可以灌装哪些产品？`,
+              '该机适用于纯净水、矿泉水、山泉水、饮用水等不含气瓶装水。果汁或碳酸饮料通常需要不同的工艺和灌装设计。',
+            ],
+            [
+              '可以提供完整生产线吗？',
+              '可以。灌装机可与水处理、吹瓶、输送、贴标、喷码、包装和码垛设备组成整线。',
+            ],
+            [
+              '报价前需要确认哪些信息？',
+              '需确认瓶容量、瓶型图、盖型、目标产能、水源、电压、车间尺寸和产线范围。',
+            ],
+            [
+              '产线布局可以定制吗？',
+              '可以。布局可根据工厂空间、瓶子方向、后段包装方式和未来扩产规划调整。',
+            ],
+          ].map(([question, answer]) => (
+            <details>
+              <summary>{question}</summary>
+              <p>{answer}</p>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section class="product-section product-source-section">
+      <div class="container product-source-box">
+        <div>
+          <p class="product-kicker">资料来源</p>
+          <h2>产品资料记录</h2>
+          <p>{product.sourceNote}</p>
+        </div>
+        {product.sourceUrl ? (
+          <a href={product.sourceUrl} rel="nofollow noopener" target="_blank">查看产品</a>
+        ) : (
+          <a href={productUrl}>等待源链接</a>
+        )}
+      </div>
+    </section>
+
+        <div id="inquiry">
+      <Template1 />
+    </div>
+  </article>
+</BaseLayout>
