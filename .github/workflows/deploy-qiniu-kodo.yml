@@ -17,6 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       QINIU_BUCKET: ${{ vars.QINIU_BUCKET }}
+      QINIU_CDN_ORIGIN: https://www.spring-pack.cn
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -60,13 +61,23 @@ jobs:
             --bucket "$QINIU_BUCKET" \
             --overwrite --check-exists --check-hash --rescan-local \
             --thread-count 12 \
+            --overwrite-list "$RUNNER_TEMP/qiniu-overwritten.txt" \
             --failure-list "$RUNNER_TEMP/qiniu-failed.txt"
           if test -s "$RUNNER_TEMP/qiniu-failed.txt"; then
             echo '::error::Some files failed to upload to Qiniu Kodo'
             exit 1
           fi
+      - name: Build CDN refresh URL list
+        if: ${{ vars.QINIU_BUCKET != '' }}
+        run: node scripts/create-qiniu-refresh-list.mjs "$RUNNER_TEMP/qiniu-overwritten.txt" "$RUNNER_TEMP/qiniu-refresh.txt"
       - name: Refresh production CDN
         if: ${{ vars.QINIU_BUCKET != '' }}
         run: |
-          printf '%s\n' 'https://www.spring-pack.cn/' > "$RUNNER_TEMP/qiniu-refresh.txt"
-          qshell cdnrefresh --dirs -i "$RUNNER_TEMP/qiniu-refresh.txt"
+          URL_COUNT="$(wc -l < "$RUNNER_TEMP/qiniu-refresh.txt")"
+          if [ "$URL_COUNT" -eq 0 ]; then
+            echo 'No overwritten files; CDN refresh skipped'
+          elif [ "$URL_COUNT" -gt 450 ]; then
+            printf '%s/\n' "${QINIU_CDN_ORIGIN%/}" | qshell cdnrefresh --dirs
+          elif ! qshell cdnrefresh -i "$RUNNER_TEMP/qiniu-refresh.txt"; then
+            printf '%s/\n' "${QINIU_CDN_ORIGIN%/}" | qshell cdnrefresh --dirs
+          fi

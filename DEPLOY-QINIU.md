@@ -8,11 +8,11 @@
 
 首次启用前，在 GitHub 仓库 **Settings → Secrets and variables → Actions** 中设置：
 
-- Repository variable `QINIU_BUCKET`：在七牛云 Kodo 中绑定 `www.spring-pack.cn` 的存储空间名称。未设置时，构建会运行，上传任务会跳过。
+- Repository variable `QINIU_BUCKET`：已设为 `springpack`，这是 `www.spring-pack.cn` 当前绑定的存储空间。未设置时，构建会运行，上传任务会跳过。
 - Repository secret `QINIU_ACCESS_KEY`：有该空间上传和 CDN 刷新权限的七牛云 AccessKey。
 - Repository secret `QINIU_SECRET_KEY`：对应的 SecretKey。不要将密钥写入仓库或提交历史。
 
-设置完成后，在 GitHub Actions 中手动运行一次 **Deploy to Qiniu Kodo**，核对正式站点的首页、联系页和微信二维码。之后每次推送 `main` 都会自动发布。构建使用官方 qshell `v2.19.13`，只覆盖同名文件，不删除空间中其他文件。
+设置完成后，在 GitHub Actions 中手动运行一次 **Deploy to Qiniu Kodo**，核对正式站点的首页、联系页和微信二维码。之后每次推送 `main` 都会自动发布和刷新 CDN，无需登录七牛云手动刷新预取。构建使用官方 qshell `v2.19.13`，只覆盖同名文件，不删除空间中其他文件。
 
 Kodo 无法运行 Astro 的 `/api/contact`。当前联系表单依赖此接口，因此静态站点上的表单提交不会成功；电话、邮件和微信联系方式仍可使用。要让表单接收询盘，需要单独部署后端并改用可访问的 API 地址。
 
